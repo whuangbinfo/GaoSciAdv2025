@@ -18,7 +18,8 @@ library(openxlsx)
 library(clusterProfiler)
 library(org.Hs.eg.db)
 library(fgsea)
-library(ggplot2)
+library(tidyverse)
+library(ggsignif)
 
 
 library(tidyverse)
@@ -153,6 +154,54 @@ DotPlot(so, group.by = 'FB_Annotation', features = custom_genes, scale = T, scal
   ggtitle("")
 ```
 
+# Figure 1L
 ```{r}
+caf_prop <- readRDS('data/choi_caf_prop.rds') # top 20 genes with padj < 0.05 and log2FC > 1 
 
+for (caf in colnames(caf_prop)[1:4]) {
+  pre <- caf_prop[, caf][1:20]  
+  post <- caf_prop[, caf][21:40]
+
+  results_wt <- wilcox.test(pre, post, paired = T)
+  
+  results_wt_signif <- cut(results_wt$p.value, 
+                           breaks = c(0, 0.0001, 0.001, 0.01, 0.05, 1), 
+                           labels = c('****', '***', '**', '*', 'ns'), 
+                           right = TRUE)
+  
+  plot <- ggplot(data = caf_prop, mapping = aes(x = group, y = caf_prop[, caf], fill = group)) +
+    geom_boxplot(show.legend = FALSE, outliers = TRUE, staplewidth = 0.2) +
+    labs(title = sprintf('Choi-EPIC \n%s', caf), x = 'Patient Group', y = 'Fraction') +
+    scale_x_discrete() +
+    scale_y_continuous() +
+    scale_fill_manual(values = c(brewer.pal(9, 'Set1')[2], brewer.pal(9, 'Set1')[1])) +
+    theme_minimal() +
+    theme(
+      text = element_text(size = 10), 
+      title = element_text(size = 12, hjust = 0.5, vjust = 0.5), 
+      axis.text.x.bottom = element_text(angle = 45, hjust = 1)
+    )
+  
+  plot <- plot + geom_signif(
+    comparisons = list(c("Pre", "Post")),  
+    y_position = max(caf_prop[, caf]) * 1.1,  
+    annotations = as.character(results_wt_signif),  
+    tip_length = 0.02, size = 1, textsize = 3, vjust = 0.3
+  )
+
+  print(plot)
+}
+```
+
+# Figure S1C
+```{r}
+all.markers <- FindAllMarkers(so, group.by = 'FB_Annotation')
+all.markers$cluster <- factor(all.markers$cluster, labels = levels(so$FB_Annotation))
+all.markers <- all.markers[all.markers$p_val_adj < 0.05 & all.markers$avg_log2FC > 1 & all.markers$pct.1 > 0.1,]
+all.markers.ordered <- all.markers %>% group_by(cluster) %>% arrange(cluster, desc(avg_log2FC))
+top <- top_n(all.markers.ordered, 20, avg_log2FC)
+DoHeatmap(object = so, features = top$gene, group.by = 'FB_Annotation', combine = T, label = T, raster = 1000, group.colors = colors_orig, size = 8, angle = 45, hjust = 0) + 
+  theme(aspect.ratio = 3, axis.text.y = element_text(size = 15)) + 
+  # scale_fill_gradient2(low = 'navy', mid = 'white', high = 'darkred') + 
+  NoLegend()
 ```
