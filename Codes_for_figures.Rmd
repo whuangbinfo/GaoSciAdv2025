@@ -20,6 +20,7 @@ library(org.Hs.eg.db)
 library(fgsea)
 library(tidyverse)
 library(ggsignif)
+library(RColorBrewer)
 
 
 library(tidyverse)
@@ -98,6 +99,8 @@ geneset_entrez <- bitr(geneID = geneset$X1, 'SYMBOL', 'ENTREZID', OrgDb = org.Hs
 
 # geneset_list <- intersect(names(gene_list), geneset_entrez$ENTREZID)
 geneset_list <- list('Harmonizome_FIBROBLAST' = geneset_entrez$ENTREZID)
+
+gsea_results <- fgsea(pathways = geneset_list, stats = gene_list, scoreType = 'std', minSize = 10, maxSize = 500)
 
 set.seed(10)
 plotGseaTable(geneset_list[1], gene_list, gsea_results, gseaParam = 1)
@@ -193,15 +196,50 @@ for (caf in colnames(caf_prop)[1:4]) {
 }
 ```
 
-# Figure S1C
+# Figure S1C/S1D
 ```{r}
-all.markers <- FindAllMarkers(so, group.by = 'FB_Annotation')
+all.markers <- FindAllMarkers(so, features = VariableFeatures(so), group.by = 'FB_Annotation')
 all.markers$cluster <- factor(all.markers$cluster, labels = levels(so$FB_Annotation))
-all.markers <- all.markers[all.markers$p_val_adj < 0.05 & all.markers$avg_log2FC > 1 & all.markers$pct.1 > 0.1,]
+all.markers <- all.markers[all.markers$p_val_adj < 0.05 & all.markers$avg_log2FC > 1,]
 all.markers.ordered <- all.markers %>% group_by(cluster) %>% arrange(cluster, desc(avg_log2FC))
 top <- top_n(all.markers.ordered, 20, avg_log2FC)
 DoHeatmap(object = so, features = top$gene, group.by = 'FB_Annotation', combine = T, label = T, raster = 1000, group.colors = colors_orig, size = 8, angle = 45, hjust = 0) + 
   theme(aspect.ratio = 3, axis.text.y = element_text(size = 15)) + 
   # scale_fill_gradient2(low = 'navy', mid = 'white', high = 'darkred') + 
   NoLegend()
+
+cols <- c('COL1A1', 'COL1A2', 'COL3A1')
+plot_list <- list()
+for (col in cols){
+  plot_list[[col]] <- VlnPlot(so, group.by = 'FB_Annotation', features = col, cols = colors_orig, ncol = 1, pt.size = 0) +
+    labs(y = col) +
+    theme(
+      axis.text.y = element_text(face = "bold.italic")
+    ) +
+    ggtitle("") +
+    NoLegend()
+}
+
+VlnPlot(so, assay = 'integrated', group.by = 'FB_Annotation', features = cols, cols = colors_orig, pt.size = 0, stack = T, fill.by = "ident", flip = T) + 
+  labs(x = "", y = "") +
+  scale_y_continuous(limits = c(-1, 7), breaks = seq(0, 6, 2)) +
+  NoLegend()
 ```
+
+# Figure S2A
+```{r}
+so_psf <- readRDS("data/so_with_peri.rds")
+
+pericyte_markers = c('KCNJ8', 'ABCC9', 'HIGD1B', 'RGS5', 'NDUFA4L2', 'CD248', 'CSPG4', 'NOTCH3', 'MCAM')
+DotPlot(so_psf, features = pericyte_markers, assay = 'integrated', group.by = 'FB_Annotation', scale = T, scale.by = 'size') + 
+  labs(x = '', y = 'Cell Types') +
+  theme(legend.text = element_text(size = 8), 
+        legend.direction = 'vertical',
+        legend.position = 'right',
+        axis.text.x = element_text(size = 10, angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 10),
+        axis.text = element_text(size = 5)) + 
+  scale_y_discrete(limits = rev(levels(so_psf$FB_Annotation))) +
+  scale_color_gradient2(low = 'blue', mid = 'white', high = 'red') 
+```
+
