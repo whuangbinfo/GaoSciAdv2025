@@ -32,7 +32,7 @@ so <- readRDS('data/GaoSciAdv2025.rds') # so
 # Output Folder
 ```{r}
 proj_name <- 'GaoSciAdv2025Figs'
-parent_folder <- 'E:'
+parent_folder <- getwd()
 dir.create(sprintf('%s/%s', parent_folder, proj_name))
 folder_path <- sprintf('%s/%s', parent_folder, proj_name)
 
