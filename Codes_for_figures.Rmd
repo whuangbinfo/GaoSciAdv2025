@@ -21,41 +21,12 @@ library(fgsea)
 library(tidyverse)
 library(ggsignif)
 library(RColorBrewer)
-
-
-library(tidyverse)
-library(Matrix)
-library(scales)
-library(cowplot)
-library(RCurl)
-library(scCustomize)
-library(matrixStats)
-library(openxlsx)
-library(future)
-library(glmGamPoi)
-library(harmony)
-library(sctransform)
-library(dplyr)
-library(RColorBrewer)
-library(enrichR)
-library(AnnotationDbi)
-library(SingleR)
-library(celldex)
-library(knitr)
-library(biomaRt)
-library(tcltk)
-library(org.Hs.eg.db)
-library(ggplotify)
-library(DESeq2)
-library(clusterProfiler)
-library(openxlsx)
-library(ggplot2)
-library(fgsea)
+library(EPIC)
 ```
 
 # Input Data
 ```{r}
-load('data/MIBC_CAF_CLUSTERS_PUBLISHED.RData') # so
+so <- readRDS('data/GaoSciAdv2025.rds') # so
 ```
 
 # Output Folder
@@ -102,7 +73,6 @@ geneset_list <- list('Harmonizome_FIBROBLAST' = geneset_entrez$ENTREZID)
 
 gsea_results <- fgsea(pathways = geneset_list, stats = gene_list, scoreType = 'std', minSize = 10, maxSize = 500)
 
-set.seed(10)
 plotGseaTable(geneset_list[1], gene_list, gsea_results, gseaParam = 1)
 plotEnrichment(
   pathway = geneset_list[[1]],
@@ -242,4 +212,3 @@ DotPlot(so_psf, features = pericyte_markers, assay = 'integrated', group.by = 'F
   scale_y_discrete(limits = rev(levels(so_psf$FB_Annotation))) +
   scale_color_gradient2(low = 'blue', mid = 'white', high = 'red') 
 ```
-
