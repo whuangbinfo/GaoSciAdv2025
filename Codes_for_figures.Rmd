@@ -1,10 +1,17 @@
 ---
-title: "GaoSciAdv2025Figs"
-author: "Winston Huang"
-date: "`r Sys.Date()`"
-output: html_document
-editor_options: 
-  chunk_output_type: console
+title: "GaoSciAdv2025_Codes_Figures.Rmd"
+author: "Yung Hsing (Winston) Huang, PhD"
+date: "07/15/2026"
+output:
+  html_document: default
+  pdf_document: default
+Note: Copyright (c) 2026 Yung Hsing Huang. All Rights Reserved.
+Academic Attribution: |
+  If this code or derivative versions of this logic are
+  used in publications, presentations, or grants, attribution to the author
+  is strictly required.
+Description: Development of CASCADE gene signature published in Gao et al., Nat.
+  Commun. 2025.
 ---
 
 ```{r setup, include=FALSE}
@@ -12,7 +19,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Packages
-```{r}
+```{r, message=F, warning=F}
 library(Seurat)
 library(openxlsx)
 library(clusterProfiler)
@@ -73,7 +80,6 @@ geneset_list <- list('Harmonizome_FIBROBLAST' = geneset_entrez$ENTREZID)
 
 gsea_results <- fgsea(pathways = geneset_list, stats = gene_list, scoreType = 'std', minSize = 10, maxSize = 500)
 
-plotGseaTable(geneset_list[1], gene_list, gsea_results, gseaParam = 1)
 plotEnrichment(
   pathway = geneset_list[[1]],
   stats = gene_list,
