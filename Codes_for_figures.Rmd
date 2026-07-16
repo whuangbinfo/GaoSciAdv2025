@@ -4,20 +4,13 @@ author: "Yung Hsing (Winston) Huang, PhD"
 date: "07/15/2026"
 output:
   html_document: default
-  pdf_document: default
 Note: Copyright (c) 2026 Yung Hsing Huang. All Rights Reserved.
 Academic Attribution: |
   If this code or derivative versions of this logic are
   used in publications, presentations, or grants, attribution to the author
   is strictly required.
-Description: Development of CASCADE gene signature published in Gao et al., Nat.
-  Commun. 2025.
+Description: Gao et al., Sci. Adv. 2025.
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 # Packages
 ```{r, message=F, warning=F}
 library(Seurat)
@@ -32,12 +25,12 @@ library(EPIC)
 ```
 
 # Input Data
-```{r}
+```{r message=F, warning=F}
 so <- readRDS('data/GaoSciAdv2025.rds') # so
 ```
 
 # Output Folder
-```{r}
+```{r message=F, warning=F}
 proj_name <- 'GaoSciAdv2025Figs'
 parent_folder <- getwd()
 dir.create(sprintf('%s/%s', parent_folder, proj_name))
@@ -61,7 +54,7 @@ colors_orig <- c(
 ```
 
 # Figure 1A
-```{r}
+```{r message=F, warning=F}
 # Load data
 deg <- read.xlsx('data/Choi2014_Phil_Post.vs.Before_AllGenes.xlsx', cols = 1:10, sheet = 'p<0.05')
 original_gene_list <- deg$log2FC_Post.vs.Before
@@ -99,7 +92,7 @@ plotEnrichment(
 ```
 
 # Figure 1G/1H/1I
-```{r}
+```{r message=F, warning=F}
 custom_genes = c('ACTA2', 'IL6')
 
 DotPlot(so, group.by = 'FB_Annotation', features = custom_genes, scale = T, scale.by = 'size') + 
@@ -134,7 +127,7 @@ DotPlot(so, group.by = 'FB_Annotation', features = custom_genes, scale = T, scal
 ```
 
 # Figure 1L
-```{r}
+```{r message=F, warning=F}
 caf_prop <- readRDS('data/choi_caf_prop.rds') # top 20 genes with padj < 0.05 and log2FC > 1 
 
 for (caf in colnames(caf_prop)[1:4]) {
@@ -173,7 +166,7 @@ for (caf in colnames(caf_prop)[1:4]) {
 ```
 
 # Figure S1C/S1D
-```{r}
+```{r message=F, warning=F}
 all.markers <- FindAllMarkers(so, features = VariableFeatures(so), group.by = 'FB_Annotation')
 all.markers$cluster <- factor(all.markers$cluster, labels = levels(so$FB_Annotation))
 all.markers <- all.markers[all.markers$p_val_adj < 0.05 & all.markers$avg_log2FC > 1,]
@@ -203,7 +196,7 @@ VlnPlot(so, assay = 'integrated', group.by = 'FB_Annotation', features = cols, c
 ```
 
 # Figure S2A
-```{r}
+```{r message=F, warning=F}
 so_psf <- readRDS("data/so_with_peri.rds")
 
 pericyte_markers = c('KCNJ8', 'ABCC9', 'HIGD1B', 'RGS5', 'NDUFA4L2', 'CD248', 'CSPG4', 'NOTCH3', 'MCAM')
@@ -217,4 +210,8 @@ DotPlot(so_psf, features = pericyte_markers, assay = 'integrated', group.by = 'F
         axis.text = element_text(size = 5)) + 
   scale_y_discrete(limits = rev(levels(so_psf$FB_Annotation))) +
   scale_color_gradient2(low = 'blue', mid = 'white', high = 'red') 
+```
+
+```{r}
+sessionInfo()
 ```
